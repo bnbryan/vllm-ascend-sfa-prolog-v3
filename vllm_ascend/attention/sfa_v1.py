@@ -1679,9 +1679,9 @@ class AscendSFAImpl(MLAAttentionImpl):
                 hidden_states = torch.ops.vllm.maybe_all_gather_and_maybe_unpad(
                     hidden_states.contiguous(), need_gather_q_kv
                 )
-            assert slot_mapping.numel() == hidden_states.shape[0], (
+            assert slot_mapping_sfa.numel() == hidden_states.shape[0], (
                 "SFA Prolog V3 requires one cache index per input token, "
-                f"got token_x={hidden_states.shape[0]} and cache_index={slot_mapping.numel()}."
+                f"got token_x={hidden_states.shape[0]} and cache_index={slot_mapping_sfa.numel()}."
             )
             if self.has_indexer:
                 k_li, k_li_scale = self.indexer_select_pre_process(x=hidden_states, cos=cos, sin=sin)
@@ -1696,7 +1696,7 @@ class AscendSFAImpl(MLAAttentionImpl):
                 kv_cache=kv_cache,
                 cos=cos,
                 sin=sin,
-                slot_mapping=slot_mapping,
+                slot_mapping=slot_mapping_sfa,
                 cache_mode="PA_BSND",
             )
         # run mlapo ops when dsa-cp is disabled, and ensure that num_tokens satisfies the count limitation
